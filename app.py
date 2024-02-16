@@ -166,37 +166,6 @@ def get_key(my_dict, val):
     return "key doesn't exist"
 
 
-# def main(test_dat, pos=0):
-    my_net_mv, trx, mod_frm_no = model_return(1)
-    my_net_sv, trx, mod_frm_no = model_return(0)
-
-    LabelDict = {'sitting': 0, 'standing': 1, 'lying_d': 2, 'lying_u': 3, 'walking': 4, 'push_up': 5, 'object_walk': 6,
-                 'object_pick': 7, 'hand_wave': 8, 'leg_exer': 9, 'what': 10}
-    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-
-    vid_seg = test_dat.get_data_test(pos)
-    vid_seg_pt = trx(torch.tensor(vid_seg).unsqueeze(0))
-    my_net_mv.to(device)
-    my_net_sv.to(device)
-    s1 = vid_seg_pt.to(device)
-
-    with torch.no_grad():
-        output_mv = my_net_mv(s1[0])
-        output_sv = my_net_sv(s1[0])
-
-    pred_mv = output_mv.argmax(dim=1)
-    pred_sv = output_sv.argmax(dim=1)
-
-    video1 = vid_seg[0].transpose(1, 2, 3, 0)
-    video2 = vid_seg[1].transpose(1, 2, 3, 0)
-    video3 = vid_seg[2].transpose(1, 2, 3, 0)
-    videos = [video1, video2, video3]
-
-    messages = [get_key(LabelDict, pred_mv[0]) + "\n" + get_key(LabelDict, pred_sv[0]),
-                get_key(LabelDict, pred_mv[1]) + "\n" + get_key(LabelDict, pred_sv[1]),
-                get_key(LabelDict, pred_mv[2]) + "\n" + get_key(LabelDict, pred_sv[2])]
-
-    return videos, messages
 
 
 @app.route('/')
@@ -227,7 +196,9 @@ def main(test_dat, pos=0, classify_type="single"):
                  'object_pick': 7, 'hand_wave': 8, 'leg_exer': 9, 'what': 10}
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
-    vid_seg = test_dat.get_data_test(pos)
+    with open('/Test_Pickles/'+str(pos)+'.pickle', 'rb') as f:
+                vid_seg =  pickle.load(f)
+                
     vid_seg_pt = trx(torch.tensor(vid_seg).unsqueeze(0))
     my_net_mv.to(device)
     my_net_sv.to(device)
@@ -251,4 +222,4 @@ def main(test_dat, pos=0, classify_type="single"):
     return videos, messages
 
 if __name__ == '__main__':
-    app.run(debug=True, port=8080)
+    app.run(debug=True, port=6080)
