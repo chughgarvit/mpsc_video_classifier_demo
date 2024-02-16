@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Model Predictions Demo</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+    <style>
+       body, html {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; /* Professional font */
+    background-color: #f5f5f5; 
+    color: #333; 
+}
+.prediction-result-multiple {
+    margin-left: 600px; 
+    font-size: 18px; 
+    font-weight: bold; 
+    color: #333; 
+    padding: 10px; 
+    border-radius: 5px; 
+    background-color: #f8f9fa; 
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1); 
+    text-align: center; 
+}
+.prediction-result-single {
+    margin-left: 600px; 
+    font-size: 18px; 
+    font-weight: bold; 
+    color: #333; 
+    padding: 10px; 
+    border-radius: 5px; 
+    background-color: #f8f9fa; 
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1); 
+    text-align: center; 
+}
+.container {
+    max-width: 80%; 
+    margin: 20px auto;
+    padding: 0 15px;
+    background-color: #ffffff; 
+    box-shadow: 0 0 10px rgba(0,0,0,0.1); 
+    border-radius: 8px; 
+    padding: 20px; 
+}
+
+.video-row {
+    display: flex;
+    justify-content: space-around;
+    flex-wrap: wrap;
+    gap: 20px;
+}
+
+.video-block {
+    flex: 1;
+    margin-bottom: 20px;
+    max-width: 32%;
+}
+
+.video-container {
+    position: relative;
+    width: 100%;
+    padding-top: 56.25%; /* 16:9 Aspect Ratio */
+    overflow: hidden;
+}
+
+.video-container video {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
+
+.predictions p {
+    margin: 5px 0;
+    font-size: 16px; 
+    font-weight: 500; 
+}
+
+h1 {
+    color: #007bff; 
+    text-align: center;
+    margin-bottom: 24px; 
+}
+
+
+.predictions img {
+    width: 24px; 
+    vertical-align: middle; 
+}
+
+
+@media (max-width: 768px) {
+    .video-block {
+        max-width: 48%;
+    }
+}
+
+@media (max-width: 480px) {
+    .video-block {
+        max-width: 100%;
+    }
+}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="text-center mb-4">Predictions Demo</h1>
+        <div class="video-row">
+            {% for video in videos %}
+            <div class="video-block text-center">
+                <div class="video-container">
+                    <video controls>
+                        <source src="{{ url_for('static', filename='videos/' + video) }}" type="video/mp4">
+                        Your browser does not support the video tag.
+                    </video>
+                </div>
+                <br>
+                <div class="prediction-result-multiple d-flex justify-content-center align-items-center"></div>
+                <div class="prediction-result-single d-flex justify-content-center align-items-center"></div>
+            </div>
+            {% endfor %}
+            <input type="number" class="form-control segment-input" placeholder="Enter segment number" value="2500">
+            <button class="btn btn-info mt-2 set-time-btn">Set Time/Frame</button>
+            <button class="btn btn-secondary mt-2 classify-btn" data-type="multi" data-video="{{ video }}" data-target="prediction-result-multiple">Classify using Single Scene Model</button>
+            <button class="btn btn-primary mt-2 classify-btn" data-type="single" data-video="{{ video }}" data-target="prediction-result-single">Classify using Multiple Scene Model</button>
+        </div>
+    </div> 
+    <script>
+        document.querySelectorAll('.set-time-btn').forEach(button => {
+    button.addEventListener('click', function() {
+        const frameNumber = parseInt(this.closest('.video-row').querySelector('.segment-input').value); // Get the frame number from the input field
+        const fps = 10; // Assuming 10 fps
+
+        const timeInSeconds = frameNumber / fps; // Calculate the time position
+
+        this.closest('.video-row').querySelectorAll('video').forEach(video => {
+            video.currentTime = timeInSeconds; // Set the current time of the video
+        });
+    });
+});
+
+        document.querySelectorAll('.classify-btn').forEach(button => {
+            button.addEventListener('click', function() {
+                const videoName = this.getAttribute('data-video');
+                const classifyType = this.getAttribute('data-type');
+                const segmentNumber = this.closest('.video-row').querySelector('.segment-input').value;
+                const resultFieldClass = this.getAttribute('data-target');
+                const resultContainer = this.closest('.video-row').querySelector('.' + resultFieldClass);
+    
+                // Show loading message
+                resultContainer.innerHTML = 'Processing the files...';
+    
+                fetch(`/predict/${classifyType}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({video_path: videoName, segment: segmentNumber}),
+                })
+                .then(response => response.json())
+                .then(data => {
+                    // Determine the model based on the classifyType for labeling
+                    const modelLabel = classifyType === 'single' ? "Multiple Scene Model Results: " : "Single Scene Model Results: ";
+                    const tabSpaces = '&nbsp;&nbsp&nbsp;&nbsp&nbsp;&nbsp&nbsp;&nbsp&nbsp;&nbsp&nbsp;&nbsp&nbsp;&nbsp&nbsp;&nbsp&nbsp;&nbsp&nbsp;&nbsp&nbsp;&nbsp&nbsp;&nbsp&nbsp;&nbsp&nbsp;&nbsp&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
+                    // Prepend the model label to the results
+                    resultContainer.innerHTML = modelLabel + data.messages.join(tabSpaces);
+                })
+                .catch((error) => {
+                    console.error('Error:', error);
+                    resultContainer.innerHTML = 'Error in prediction.';
+                });
+            });
+        });
+    </script>
+    
+</body>
+</html>

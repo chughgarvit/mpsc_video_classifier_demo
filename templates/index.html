@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Model Predictions Demo</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+    <style>
+        .prediction-input, .prediction-results input {
+    text-align: center;
+}
+.text-input-container, #messageDisplay {
+    display: none; /* Hide elements initially */
+}
+
+.prediction-results {
+    margin-bottom: 20px; /* Adjust this value as needed */
+    margin-top: 20px; /* Adjust this value as needed */
+}
+
+.button-container {
+    text-align: center; /* Center align the content of the container */
+}
+
+.button-container .classify-btn {
+    margin: 0 auto; /* Apply automatic margin to buttons for horizontal centering */
+    display: inline-block; /* Make the buttons inline-block for center alignment */
+}
+
+
+       body, html {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f5f5f5; 
+    color: #333; 
+}
+.gif-result-multiple, .gif-result-single {
+    margin-top: 20px; /* Adjusted for spacing */
+    font-size: 16px; /* Adjusted font size for better readability */
+    font-weight: bold; 
+    color: #333; 
+    padding: 10px; 
+    border-radius: 5px; 
+    background-color: #f8f9fa; 
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1); 
+    text-align: center; 
+}
+.container {
+    max-width: 80%; 
+    margin: 20px auto;
+    padding: 0 15px;
+    background-color: #ffffff; 
+    box-shadow: 0 0 10px rgba(0,0,0,0.1); 
+    border-radius: 8px; 
+    padding: 20px; 
+}
+
+.gif-row {
+    display: flex;
+    justify-content: space-around;
+    flex-wrap: wrap;
+    gap: 20px;
+}
+
+.gif-block {
+    flex: 1;
+    margin-bottom: 20px;
+    max-width: 32%;
+}
+
+.gif-container img {
+    width: 100%; 
+    height: auto; 
+}
+
+.predictions p {
+    margin: 5px 0;
+    font-size: 16px; 
+    font-weight: 500; 
+}
+
+h1 {
+    color: #007bff; 
+    text-align: center;
+    margin-bottom: 24px; 
+}
+
+@media (max-width: 768px) {
+    .gif-block {
+        max-width: 48%;
+    }
+}
+
+@media (max-width: 480px) {
+    .gif-block {
+        max-width: 100%;
+    }
+}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="text-center mb-4">Predictions Demo</h1>
+        <select class="form-control mb-4" id="gifSetSelect">
+            <!-- Dynamically filled in the script below -->
+        </select>
+        <div class="gif-row">
+            <!-- GIFs and prediction labels will be dynamically loaded here -->
+        </div>
+
+        <div class="button-container">
+            <button class="btn btn-secondary mt-2 classify-btn" data-type="single">Classify using Single Scene Model</button>
+            <button class="btn btn-primary mt-2 classify-btn" data-type="multi">Classify using Multiple Scene Model</button>
+        </div>
+
+        <div class="text-input-container">
+            <input type="text" class="form-control" id="posInput" placeholder="Enter position">
+            <button class="btn btn-success mt-2" id="submitBtn">Submit</button>
+        </div>
+        <div id="messageDisplay"></div>
+        
+        
+        
+        <!-- <button class="btn btn-secondary mt-2 classify-btn" data-type="single">Classify using Single Scene Model</button>
+        <button class="btn btn-primary mt-2 classify-btn" data-type="multi">Classify using Multiple Scene Model</button> -->
+    </div>
+
+    <script>
+        document.getElementById('submitBtn').addEventListener('click', function() {
+    const posValue = document.getElementById('posInput').value;
+    const gifSetSelected = document.getElementById('gifSetSelect').value;
+    const classifyType = document.querySelector('.classify-btn.active').getAttribute('data-type'); // Assuming you have a way to identify which classify button is active
+
+    // Prepare the data to be sent
+    const requestData = {
+        test_dat: gifSetSelected,
+        pos: posValue,
+        classify_type: classifyType
+    };
+
+    // Make an asynchronous request to Flask backend
+    fetch('/process_input', { // '/process_input' is the route in your Flask app that will handle this request
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(requestData),
+    })
+    .then(response => response.json())
+    .then(data => {
+        // Assuming the response contains {videos: [], messages: []}
+        displayMessages(data.messages);
+    })
+    .catch((error) => {
+        console.error('Error:', error);
+    });
+});
+
+function displayMessages(messages) {
+    const messageDisplay = document.getElementById('messageDisplay');
+    messageDisplay.innerHTML = ''; // Clear previous messages
+    messages.forEach(msg => {
+        const p = document.createElement('p');
+        p.textContent = msg;
+        messageDisplay.appendChild(p);
+    });
+}
+
+        const predictionsData = {
+            '01': {
+                'multi': ['Multiview Model', 'Walking', 'Walking', 'Walking'],
+                'single': ['Singleview Model', 'Standing', 'Object Walking', 'Object Walking']
+            },
+            '02': {
+                'multi': ['Multiview Model', 'Push Up', 'Push Up', 'Push Up'],
+                'single': ['Singleview Model', 'Push Up', 'Object Walking', 'Sitting']
+            },
+            '03': {
+                'multi': ['Multiview Model', 'Lying Face Down', 'Lying Face Down', 'Lying Face Down'],
+                'single': ['Singleview Model', 'Lying Face Down', 'Object Walking', 'Lying Face Up']
+            },
+            '04': {
+                'multi': ['Multiview Model', 'Lying Face Up', 'Lying Face Up', 'Lying Face Up'],
+                'single': ['Singleview Model', 'Lying Face Up', 'Object Walking', 'Sitting']
+            },
+            '05': {
+                'multi': ['Multiview Model', 'Object Picking', 'Object Picking', 'Object Picking'],
+                'single': ['Singleview Model', 'Object Picking', 'Object Walk', 'Sitting']
+            },
+            '06': {
+                'multi': ['Multiview Model', 'Object Walk', 'Object Walk', 'Object Walk'],
+                'single': ['Singleview Model', 'Object Pick', 'Lying Face Down', 'Leg Exercise']
+            },
+            '07': {
+                'multi': ['Multiview Model', 'Hand Wave', 'Hand Wave', 'Hand Wave'],
+                'single': ['Singleview Model', 'Hand Wave', 'Walking', 'Lying Down']
+            },
+            '08': {
+                'multi': ['Multiview Model', 'Lying Face Up', 'Lying Face Up', 'Lying Face Up'],
+                'single': ['Singleview Model', 'Lying Face Up', 'Lying Face Down', 'Leg Exercise']
+            },
+            '09': {
+                'multi': ['Multiview Model', 'Object Walking', 'Object Walking', 'Object Walking'],
+                'single': ['Singleview Model', 'Object Walking', 'Object Walking', 'Walking']
+            },
+            '10': {
+                'multi': ['Multiview Model', 'Object Picking', 'Object Picking', 'Object Picking'],
+                'single': ['Singleview Model', 'Object Picking', 'Lying Down', 'Leg Exercise']
+            },
+            '11': {
+                'multi': ['Multiview Model', 'Hand Wave', 'Hand Wave', 'Hand Wave'],
+                'single': ['Singleview Model', 'Hand Wave', 'Object Walking', 'Standing']
+            }
+        };
+    
+        function populateDropdown() {
+            const dropdown = document.getElementById('gifSetSelect');
+            for (let i = 1; i <= 12; i++) {
+                const option = document.createElement('option');
+                option.value = `0${i}`.slice(-2); // Ensures two digits
+                option.innerText = `Set ${i}`;
+                dropdown.appendChild(option);
+            }
+        }
+    
+        function clearPreviousResults() {
+            // Optionally implement if you want to clear previous results
+        }
+    
+        function loadGifs(setSelected) {
+            const gifRow = document.querySelector('.gif-row');
+            gifRow.innerHTML = ''; // Clear current content
+    
+            for (let i = 0; i < 3; i++) { // Assuming always 3 GIFs for simplicity
+                const imgPath = `static/Animations/${setSelected}/${setSelected}_${i}.gif`;
+                gifRow.innerHTML += `
+    <div class="gif-block text-center">
+        <div class="gif-container">
+            <img src="${imgPath}" alt="GIF ${i + 1}">
+        </div>
+        <div class="prediction-results" id="single-prediction-${setSelected}-${i}" style="display: none;">
+            <h5>Single View Model Result</h5>
+            <input type="text" class="form-control" id="single-result-${setSelected}-${i}" readonly>
+        </div>
+        <div class="prediction-results" id="multi-prediction-${setSelected}-${i}" style="display: none;">
+            <h5>Multi View Model Result</h5>
+            <input type="text" class="form-control" id="multi-result-${setSelected}-${i}" readonly>
+        </div>
+    </div>
+`;
+
+            }
+        }
+    
+        function classifyGifs(setSelected, viewType) {
+    for (let i = 0; i < 3; i++) {
+        // Find the appropriate prediction div based on viewType and set the "Processing" message.
+        const singlePredictionDiv = document.getElementById(`single-prediction-${setSelected}-${i}`);
+        const multiPredictionDiv = document.getElementById(`multi-prediction-${setSelected}-${i}`);
+        const targetDiv = viewType === 'single' ? singlePredictionDiv : multiPredictionDiv;
+        const inputId = viewType === 'single' ? `single-result-${setSelected}-${i}` : `multi-result-${setSelected}-${i}`;
+
+        // Ensure the div is visible and show "Processing"
+        targetDiv.style.display = 'block';
+        const resultInput = document.getElementById(inputId);
+        resultInput.value = 'Processing...';
+
+        setTimeout(() => { // Simulate processing delay
+            // After delay, update the input field with the actual prediction
+            resultInput.value = predictionsData[setSelected][viewType][i + 1]; // Or your logic to fetch prediction result
+        }, 2000);
+    }
+}
+
+    
+        document.getElementById('gifSetSelect').addEventListener('change', function() {
+            loadGifs(this.value); // Reload GIFs on selection change
+        });
+    
+        document.querySelectorAll('.classify-btn').forEach(button => {
+            button.addEventListener('click', function() {
+                const viewType = this.getAttribute('data-type');
+                const setSelected = document.getElementById('gifSetSelect').value;
+                classifyGifs(setSelected, viewType); // Classify GIFs and display results under them
+            });
+        });
+    
+        // Initialize
+        populateDropdown();
+        loadGifs('01'); // Load first set by default
+    </script>
+    
+</body>
+</html>
