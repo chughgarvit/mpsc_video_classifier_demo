@@ -112,8 +112,8 @@ h1 {
         </div>
 
         <div class="button-container">
-            <button class="btn btn-secondary mt-2 classify-btn" data-type="single">Classify using Single Scene Model</button>
-            <button class="btn btn-primary mt-2 classify-btn" data-type="multi">Classify using Multiple Scene Model</button>
+            <button class="btn btn-secondary mt-2 classify-btn" data-type="single">Classify using single-view model</button>
+            <button class="btn btn-primary mt-2 classify-btn" data-type="multi">Classify using milti-view model</button>
         </div>
 
         <div class="text-input-container">
@@ -242,11 +242,11 @@ function displayMessages(messages) {
             <img src="${imgPath}" alt="GIF ${i + 1}">
         </div>
         <div class="prediction-results" id="single-prediction-${setSelected}-${i}" style="display: none;">
-            <h5>Single View Model Result</h5>
+            <h5>Single-view Model Result</h5>
             <input type="text" class="form-control" id="single-result-${setSelected}-${i}" readonly>
         </div>
         <div class="prediction-results" id="multi-prediction-${setSelected}-${i}" style="display: none;">
-            <h5>Multi View Model Result</h5>
+            <h5>Multi-view Model Result</h5>
             <input type="text" class="form-control" id="multi-result-${setSelected}-${i}" readonly>
         </div>
     </div>

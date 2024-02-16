@@ -166,7 +166,7 @@ def get_key(my_dict, val):
     return "key doesn't exist"
 
 
-def main(test_dat, pos=0):
+# def main(test_dat, pos=0):
     my_net_mv, trx, mod_frm_no = model_return(1)
     my_net_sv, trx, mod_frm_no = model_return(0)
 
@@ -251,4 +251,4 @@ def main(test_dat, pos=0, classify_type="single"):
     return videos, messages
 
 if __name__ == '__main__':
-    app.run(debug=True, port=5000)
+    app.run(debug=True, port=8080)
