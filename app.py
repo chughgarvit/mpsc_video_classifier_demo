@@ -13,7 +13,7 @@ from matplotlib.animation import FuncAnimation
 from IPython.display import HTML
 
 global device
-device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+device = torch.device("mps") if torch.backends.mps.is_available() else torch.device("cpu")
 
 
 # Import libraries
@@ -66,7 +66,7 @@ class ReSizeVid():
         )
 
 def model_return(values=0):
-    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+    device = torch.device("mps") if torch.backends.mps.is_available() else torch.device("cpu")
     ModName = 'R2+1D'
     my_net, trx, mod_frm_no = get_R_model(10, mlp=1, ModName=ModName, pt=0)
     if ModName == 'R2+1D':
@@ -194,8 +194,8 @@ def main(test_dat, pos=0, classify_type="single"):
 
     LabelDict = {'sitting': 0, 'standing': 1, 'lying_d': 2, 'lying_u': 3, 'walking': 4, 'push_up': 5, 'object_walk': 6,
                  'object_pick': 7, 'hand_wave': 8, 'leg_exer': 9, 'what': 10}
-    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-
+    device = torch.device("mps") if torch.backends.mps.is_available() else torch.device("cpu")
+    device = torch.device("mps") if torch.backends.mps.is_available() else torch.device("cpu")
     with open('/Test_Pickles/'+str(pos)+'.pickle', 'rb') as f:
                 vid_seg =  pickle.load(f)
                 
